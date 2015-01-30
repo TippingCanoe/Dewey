@@ -6,6 +6,8 @@ import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 
 public class Dewey extends RecyclerView {
+	int focusedPosition;
+
 	DeweyLayoutManager layoutManager;
 	DeweyDecorator deweyDecorator;
 
@@ -31,6 +33,18 @@ public class Dewey extends RecyclerView {
 		layoutManager = new DeweyLayoutManager(context, LinearLayoutManager.HORIZONTAL, false);
 		setLayoutManager(layoutManager);
 		setHasFixedSize(true);
+
+		setFocusedPosition(0, false);
+	}
+
+	public void setFocusedPosition ( int position, boolean animated ) {
+		this.focusedPosition = position;
+
+		if (animated) {
+			smoothScrollToPosition(position);
+		} else {
+			scrollToPosition(position);
+		}
 	}
 
 	@Override
@@ -38,10 +52,18 @@ public class Dewey extends RecyclerView {
 		super.setAdapter(adapter);
 
 		if ( deweyDecorator != null ) {
+			if (deweyDecorator.getOnItemTouchListener() != null) {
+				removeOnItemTouchListener(deweyDecorator.getOnItemTouchListener());
+			}
+
 			removeItemDecoration(deweyDecorator);
 		}
 
 		deweyDecorator = new DeweyDecorator(this, adapter);
 		addItemDecoration(deweyDecorator);
+	}
+
+	public int getFocusedPosition () {
+		return focusedPosition;
 	}
 }
