@@ -279,4 +279,8 @@ public class DeweyDecorator extends RecyclerView.ItemDecoration {
 	public View getFooterView () {
 		return footerView;
 	}
+
+	public int getFooterPos () {
+		return footerPos;
+	}
 }
