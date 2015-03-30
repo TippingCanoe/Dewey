@@ -6,7 +6,10 @@ import android.graphics.Paint;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-public class DeweyDecorator extends RecyclerView.ItemDecoration {
+class DeweyDecorator extends RecyclerView.ItemDecoration {
+	final static int NO_POSITION = -1;
+	final static int NO_VIEW_TYPE = -1;
+
 	Dewey dewey;
 	RecyclerView.Adapter adapter;
 
@@ -21,16 +24,22 @@ public class DeweyDecorator extends RecyclerView.ItemDecoration {
 
 	int footerPos;
 
-	int framesPerSecond = 60;
-	int animationDuration = 10 * 1000;
+	int framesPerMs = 90 * 1000;
+	int framesRemaining = 0;
+	int totalFrames = 0;
 
 	Paint cloakPaint;
-	float minCloakPercentage = 50f;
-	int cloakColor = Color.argb((int) (255f / 2f), 255, 255, 255);
-
-	int stripHeight = 10;
-	int stripColor = Color.RED;
 	Paint stripPaint;
+
+	int animatingFromPosition = NO_POSITION;
+
+	float animatingStripXOffset = 0f;
+	float animatingStripXGoal = 0f;
+	float animatingStripXOffsetPerFrame = 0f;
+
+	float animatingStripWidthOffset = 0f;
+	float animatingStripWidthGoal = 0f;
+	float animatingStripWidthOffsetPerFrame = 0f;
 
 	DeweyItemClickListener deweyItemClickListener;
 
@@ -46,17 +55,25 @@ public class DeweyDecorator extends RecyclerView.ItemDecoration {
 	}
 
 	protected void setup() {
-		cloakPaint = new Paint();
-		cloakPaint.setColor(cloakColor);
-
-		stripPaint = new Paint();
-		stripPaint.setColor(stripColor);
+		setupCloak();
+		setupStrip();
 
 		setupAdapterObserver();
 		updateLayout();
 
 		deweyItemClickListener = new DeweyItemClickListener(dewey, this);
 		dewey.addOnItemTouchListener(deweyItemClickListener);
+
+		dewey.setOnScrollListener(new RecyclerView.OnScrollListener() {
+			@Override
+			public void onScrollStateChanged ( RecyclerView recyclerView, int newState ) {
+				if (newState == RecyclerView.SCROLL_STATE_DRAGGING || newState == RecyclerView.SCROLL_STATE_SETTLING) {
+					resetAnimationProperties();
+				}
+
+				super.onScrollStateChanged(recyclerView, newState);
+			}
+		});
 	}
 
 	protected void setupAdapterObserver () {
@@ -149,10 +166,10 @@ public class DeweyDecorator extends RecyclerView.ItemDecoration {
 			headerViewHolder = null;
 			footerViewHolder = null;
 
-			headerViewTypeId = -1;
-			footerViewTypeId = -1;
+			headerViewTypeId = NO_VIEW_TYPE;
+			footerViewTypeId = NO_VIEW_TYPE;
 
-			footerPos = -1;
+			footerPos = NO_POSITION;
 		}
 	}
 
@@ -168,7 +185,7 @@ public class DeweyDecorator extends RecyclerView.ItemDecoration {
 	public void onDrawOver ( Canvas c, RecyclerView parent, RecyclerView.State state ) {
 		c.save();
 
-		int dX = 0;
+		int dX;
 		int dY = 0;
 
 		int firstVisiblePos = parent.getChildPosition(parent.getChildAt(0));
@@ -177,28 +194,7 @@ public class DeweyDecorator extends RecyclerView.ItemDecoration {
 		boolean drawStripUnderHeaderAndFooter = dewey.getFocusedPosition() != 0 && dewey.getFocusedPosition() != footerPos;
 
 		if (drawStripUnderHeaderAndFooter) {
-			// Draw indicator strip.
-			if ((dewey.getFocusedPosition() == 0 && headerView != null) || (dewey.getFocusedPosition() == footerPos && footerView != null) || (dewey.getFocusedPosition() >= firstVisiblePos && dewey.getFocusedPosition() <= lastVisiblePos)) {
-				View currentFocusedChild;
-
-				if (dewey.getFocusedPosition() == 0) {
-					currentFocusedChild = headerView;
-				} else if (dewey.getFocusedPosition() == footerPos) {
-					currentFocusedChild = footerView;
-					dX = parent.getMeasuredWidth() - footerView.getMeasuredWidth();
-				} else {
-					currentFocusedChild = parent.getChildAt(dewey.getFocusedPosition() - firstVisiblePos);
-					dX = currentFocusedChild.getLeft();
-				}
-
-				dY = (-1 * dY) + parent.getMeasuredHeight() - stripHeight;
-				c.translate(dX, dY);
-
-				c.drawRect(0, 0, currentFocusedChild.getMeasuredWidth(), stripHeight, stripPaint);
-
-				c.translate(-1 * dX, -1 * dY);
-				dX = dY = 0;
-			}
+			drawStrip(parent, c, firstVisiblePos, lastVisiblePos);
 		}
 
 		// Draw sticky header.
@@ -206,9 +202,9 @@ public class DeweyDecorator extends RecyclerView.ItemDecoration {
 			float headerPercentageHidden = getPercentageOfViewHidden(parent.getChildAt(0), parent);
 
 			if (firstVisiblePos == 0) {
-				cloakPaint.setAlpha(mixAlpha(Color.alpha(cloakColor), Math.max(minCloakPercentage, headerPercentageHidden)));
+				cloakPaint.setAlpha(getMixedCloakAlpha(headerPercentageHidden));
 			} else {
-				cloakPaint.setAlpha(Color.alpha(cloakColor));
+				cloakPaint.setAlpha(Color.alpha(dewey.getCloakColor()));
 			}
 
 			c.drawRect(0, 0, headerView.getMeasuredWidth(), headerView.getMeasuredHeight(), cloakPaint);
@@ -220,9 +216,9 @@ public class DeweyDecorator extends RecyclerView.ItemDecoration {
 			float footerPercentageHidden = getPercentageOfViewHidden(parent.getChildAt(parent.getChildCount() - 1), parent);
 
 			if (lastVisiblePos == footerPos) {
-				cloakPaint.setAlpha(mixAlpha(Color.alpha(cloakColor), Math.max(minCloakPercentage, footerPercentageHidden)));
+				cloakPaint.setAlpha(getMixedCloakAlpha(footerPercentageHidden));
 			} else {
-				cloakPaint.setAlpha(Color.alpha(cloakColor));
+				cloakPaint.setAlpha(Color.alpha(dewey.getCloakColor()));
 			}
 
 			dX = parent.getMeasuredWidth() - footerView.getMeasuredWidth();
@@ -232,35 +228,24 @@ public class DeweyDecorator extends RecyclerView.ItemDecoration {
 			footerView.draw(c);
 
 			c.translate(-1 * dX, -1 * dY);
-			dX = dY = 0;
 		}
 
 		if (!drawStripUnderHeaderAndFooter) {
-			// Draw indicator strip.
-			if ((dewey.getFocusedPosition() == 0 && headerView != null) || (dewey.getFocusedPosition() == footerPos && footerView != null) || (dewey.getFocusedPosition() >= firstVisiblePos && dewey.getFocusedPosition() <= lastVisiblePos)) {
-				View currentFocusedChild;
-
-				if (dewey.getFocusedPosition() == 0) {
-					currentFocusedChild = headerView;
-				} else if (dewey.getFocusedPosition() == footerPos) {
-					currentFocusedChild = footerView;
-					dX = parent.getMeasuredWidth() - footerView.getMeasuredWidth();
-				} else {
-					currentFocusedChild = parent.getChildAt(dewey.getFocusedPosition() - firstVisiblePos);
-					dX = currentFocusedChild.getLeft();
-				}
-
-				dY = parent.getMeasuredHeight() - stripHeight;
-				c.translate(dX, dY);
-
-				c.drawRect(0, 0, currentFocusedChild.getMeasuredWidth(), stripHeight, stripPaint);
-
-				c.translate(-1 * dX, -1 * dY);
-				dX = dY = 0;
-			}
+			drawStrip(parent, c, firstVisiblePos, lastVisiblePos);
 		}
 
 		c.restore();
+
+		if (framesRemaining > 0) {
+			framesRemaining--;
+
+			animatingStripXOffset = animatingStripXOffset + animatingStripXOffsetPerFrame;
+			animatingStripWidthOffset = animatingStripWidthOffset + animatingStripWidthOffsetPerFrame;
+
+			dewey.postInvalidateDelayed((long) (1000f / ((float) framesPerMs / 1000f)));
+		} else {
+			resetAnimationProperties();
+		}
 	}
 
 	public float getPercentageOfViewHidden ( View view, RecyclerView parent ) {
@@ -289,5 +274,157 @@ public class DeweyDecorator extends RecyclerView.ItemDecoration {
 
 	public int getFooterPos () {
 		return footerPos;
+	}
+
+	public void setupCloak () {
+		cloakPaint = new Paint();
+		cloakPaint.setColor(dewey.getCloakColor());
+	}
+
+	public void setupStrip () {
+		stripPaint = new Paint();
+		stripPaint.setColor(dewey.getStripColor());
+	}
+
+	public void startAnimation ( int previouslyFocusedPosition, int newFocusedPosition ) {
+		resetAnimationProperties();
+
+		if (previouslyFocusedPosition != newFocusedPosition) {
+			View previouslyFocusedChild = null;
+			View newFocusedChild = null;
+
+			int minVisiblePos = adapter.getItemCount() - 1;
+			int maxVisiblePos = 0;
+
+			for (int i = 0; i < dewey.getChildCount(); i++) {
+				int childPosition = dewey.getChildPosition(dewey.getChildAt(i));
+
+				if (childPosition != RecyclerView.NO_POSITION) {
+					if (childPosition == previouslyFocusedPosition) {
+						previouslyFocusedChild = dewey.getChildAt(i);
+					} else if (childPosition == newFocusedPosition) {
+						newFocusedChild = dewey.getChildAt(i);
+					}
+
+					if (childPosition < minVisiblePos) {
+						minVisiblePos = childPosition;
+					}
+
+					if (childPosition > maxVisiblePos) {
+						maxVisiblePos = childPosition;
+					}
+				}
+			}
+
+			if (newFocusedChild != null) {
+				int stripXOrigin;
+				int stripWidthOrigin;
+
+				if (previouslyFocusedChild == null) {
+					// Previously focused child is off-screen, find the appropriate screen edge and animate from it.
+					if (previouslyFocusedPosition < newFocusedPosition) {
+						stripXOrigin = 0;
+						previouslyFocusedPosition = minVisiblePos;
+					} else {
+						stripXOrigin = dewey.getMeasuredWidth();
+						previouslyFocusedPosition = maxVisiblePos;
+					}
+
+					stripWidthOrigin = newFocusedChild.getMeasuredWidth();
+				} else {
+					// Previously focused child is on-screen, use its values.
+					stripXOrigin = previouslyFocusedChild.getLeft();
+					stripWidthOrigin = previouslyFocusedChild.getMeasuredWidth();
+				}
+
+				int frameCount = (int) ((framesPerMs / 1000f) * (dewey.getAnimationDurationMs() / 1000f));
+
+				animatingStripXGoal = newFocusedChild.getLeft();
+				animatingStripWidthGoal = newFocusedChild.getMeasuredWidth();
+
+				int dX = (int) (animatingStripXGoal - stripXOrigin);
+				int dWidth = (int) (animatingStripWidthGoal - stripWidthOrigin);
+
+				animatingStripXOffsetPerFrame = (float) dX / (float) frameCount;
+				animatingStripWidthOffsetPerFrame = (float) dWidth / (float) frameCount;
+
+				framesRemaining = totalFrames = frameCount;
+				animatingFromPosition = previouslyFocusedPosition;
+
+				// Start the animation.
+				dewey.invalidate();
+			}
+		}
+	}
+
+	protected void drawStrip ( RecyclerView parent, Canvas c, int firstVisiblePos, int lastVisiblePos ) {
+		int dX = 0;
+		int dY;
+		int dWidth;
+
+		boolean isAnimating = animatingFromPosition != NO_POSITION;
+
+		int stripPosition = isAnimating ? animatingFromPosition : dewey.getFocusedPosition();
+
+		if ((stripPosition == 0 && headerView != null) || (stripPosition == footerPos && footerView != null) || (stripPosition >= firstVisiblePos && stripPosition <= lastVisiblePos)) {
+			View currentFocusedChild;
+
+			if (stripPosition == 0) {
+				currentFocusedChild = headerView;
+			} else if (stripPosition == footerPos && footerView != null) {
+				currentFocusedChild = footerView;
+				dX = parent.getMeasuredWidth() - footerView.getMeasuredWidth();
+			} else {
+				currentFocusedChild = parent.getChildAt(stripPosition - firstVisiblePos);
+				dX = currentFocusedChild.getLeft();
+			}
+
+			if (currentFocusedChild != null) {
+				dY = parent.getMeasuredHeight() - dewey.getStripHeight();
+				dWidth = currentFocusedChild.getMeasuredWidth();
+
+				if (isAnimating) {
+					float percentageComplete = 1f - ((float) framesRemaining) / ((float) totalFrames);
+
+					dX += animatingStripXOffset;
+					// Apply interpolation.
+					dX = (int) (dX + ((animatingStripXGoal - dX) * dewey.getStripAnimationInterpolator().getInterpolation(percentageComplete)));
+
+					dWidth += animatingStripWidthOffset;
+					// Apply interpolation.
+					dWidth = (int) (dWidth + ((animatingStripWidthGoal - dWidth) * dewey.getStripAnimationInterpolator().getInterpolation(percentageComplete)));
+				}
+
+				c.translate(dX, dY);
+
+				c.drawRect(0, 0, dWidth, dewey.getStripHeight(), stripPaint);
+
+				c.translate(-1 * dX, -1 * dY);
+			}
+		}
+	}
+
+	protected int getMixedCloakAlpha ( float percentageHidden ) {
+		int originalAlpha = Color.alpha(dewey.getCloakColor());
+		float appliedPercentageHidden = Math.max(dewey.getMinCloakPercentage(), percentageHidden) / 100f;
+		int dAlpha = mixAlpha(Color.alpha(originalAlpha), appliedPercentageHidden);
+
+		// Apply interpolation.
+		return (int) (dAlpha + ((originalAlpha - dAlpha) * dewey.getCloakCurveInterpolator().getInterpolation(appliedPercentageHidden)));
+	}
+
+	protected void resetAnimationProperties () {
+		framesRemaining = 0;
+		totalFrames = 0;
+
+		animatingFromPosition = NO_POSITION;
+
+		animatingStripXOffset = 0f;
+		animatingStripXGoal = 0f;
+		animatingStripXOffsetPerFrame = 0f;
+
+		animatingStripWidthOffset = 0f;
+		animatingStripWidthGoal = 0f;
+		animatingStripWidthOffsetPerFrame = 0f;
 	}
 }

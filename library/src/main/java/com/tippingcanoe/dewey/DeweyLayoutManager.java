@@ -3,11 +3,10 @@ package com.tippingcanoe.dewey;
 import android.content.Context;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
-public class DeweyLayoutManager extends LinearLayoutManager {
+class DeweyLayoutManager extends LinearLayoutManager {
 	/**
 	 * Creates a vertical LinearLayoutManager
 	 *

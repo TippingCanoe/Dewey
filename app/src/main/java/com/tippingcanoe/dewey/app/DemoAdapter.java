@@ -26,7 +26,7 @@ public class DemoAdapter extends RecyclerView.Adapter<DemoAdapter.DeweyViewHolde
 
 	@Override
 	public void onBindViewHolder ( DeweyViewHolder holder, int position ) {
-		holder.label.setText(" " + position + " " /*+ sentances.get(position)*/);
+		holder.label.setText(" " + position + " " + sentances.get(position));
 	}
 
 	@Override
@@ -40,12 +40,12 @@ public class DemoAdapter extends RecyclerView.Adapter<DemoAdapter.DeweyViewHolde
 
 		Random random = new Random();
 		final int LOW = 1;
-		final int HIGH = 2;
+		final int HIGH = 1;
 
 		for (int i = 0; i <= 30; i++) {
 			String sentance = "";
 
-			for (int j = 0; j <= random.nextInt(HIGH - LOW) + LOW; j++) {
+			for (int j = 0; j <= (HIGH - LOW == 0 ? 0 : random.nextInt(HIGH - LOW) + LOW); j++) {
 				sentance += words.get(random.nextInt(words.size() - 1)) + " ";
 			}
 

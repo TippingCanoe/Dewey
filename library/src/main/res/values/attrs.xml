@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<declare-styleable name="Dewey">
+		<attr name="cloakColor" format="color" />
+		<attr name="minCloakPercentage" format="float" />
+		<attr name="stripHeight" format="dimension" />
+		<attr name="stripColor" format="color" />
+		<attr name="animationDurationMs" format="integer" />
+	</declare-styleable>
+</resources>

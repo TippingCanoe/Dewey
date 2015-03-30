@@ -5,7 +5,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
-public class DeweyItemClickListener implements RecyclerView.OnItemTouchListener {
+class DeweyItemClickListener implements RecyclerView.OnItemTouchListener {
 	Dewey dewey;
 	DeweyDecorator deweyDecorator;
 	GestureDetector gestureDetector;
