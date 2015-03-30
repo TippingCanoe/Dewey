@@ -7,7 +7,7 @@ Most other implementations of this style of widget don't recycle their child vie
 
 A demo application included with this repository shows an example of this functionality;
 
-![demonstration](https://raw2.github.com/TippingCanoe/QuickReturn/master/demo.gif)
+![demonstration](https://github.com/TippingCanoe/Dewey/demo.gif)
 
 ## Installing
 
