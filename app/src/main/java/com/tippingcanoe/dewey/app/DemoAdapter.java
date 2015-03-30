@@ -26,7 +26,7 @@ public class DemoAdapter extends RecyclerView.Adapter<DemoAdapter.DeweyViewHolde
 
 	@Override
 	public void onBindViewHolder ( DeweyViewHolder holder, int position ) {
-		holder.label.setText(" " + position + " " + sentances.get(position));
+		holder.label.setText(position + "\n" + sentances.get(position));
 	}
 
 	@Override
