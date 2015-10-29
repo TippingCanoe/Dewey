@@ -26,6 +26,11 @@ class DeweyItemClickListener implements RecyclerView.OnItemTouchListener {
 
 	}
 
+	@Override
+	public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
+	}
+
 	protected class SingleTapDetector extends GestureDetector.SimpleOnGestureListener {
 		Dewey dewey;
 		DeweyDecorator deweyDecorator;

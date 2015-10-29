@@ -6,5 +6,6 @@
 		<attr name="stripHeight" format="dimension" />
 		<attr name="stripColor" format="color" />
 		<attr name="animationDurationMs" format="integer" />
+		<attr name="uniformCells" format="boolean" />
 	</declare-styleable>
 </resources>

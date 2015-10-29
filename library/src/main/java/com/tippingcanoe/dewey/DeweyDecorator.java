@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.ViewGroup;
 
 class DeweyDecorator extends RecyclerView.ItemDecoration {
 	final static int NO_POSITION = -1;
@@ -64,9 +65,9 @@ class DeweyDecorator extends RecyclerView.ItemDecoration {
 		deweyItemClickListener = new DeweyItemClickListener(dewey, this);
 		dewey.addOnItemTouchListener(deweyItemClickListener);
 
-		dewey.setOnScrollListener(new RecyclerView.OnScrollListener() {
+		dewey.addOnScrollListener(new RecyclerView.OnScrollListener() {
 			@Override
-			public void onScrollStateChanged ( RecyclerView recyclerView, int newState ) {
+			public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
 				if (newState == RecyclerView.SCROLL_STATE_DRAGGING || newState == RecyclerView.SCROLL_STATE_SETTLING) {
 					resetAnimationProperties();
 				}
@@ -79,31 +80,31 @@ class DeweyDecorator extends RecyclerView.ItemDecoration {
 	protected void setupAdapterObserver () {
 		adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
 			@Override
-			public void onChanged () {
+			public void onChanged() {
 				super.onChanged();
 				updateLayout();
 			}
 
 			@Override
-			public void onItemRangeChanged ( int positionStart, int itemCount ) {
+			public void onItemRangeChanged(int positionStart, int itemCount) {
 				super.onItemRangeChanged(positionStart, itemCount);
 				updateLayout();
 			}
 
 			@Override
-			public void onItemRangeInserted ( int positionStart, int itemCount ) {
+			public void onItemRangeInserted(int positionStart, int itemCount) {
 				super.onItemRangeInserted(positionStart, itemCount);
 				updateLayout();
 			}
 
 			@Override
-			public void onItemRangeRemoved ( int positionStart, int itemCount ) {
+			public void onItemRangeRemoved(int positionStart, int itemCount) {
 				super.onItemRangeRemoved(positionStart, itemCount);
 				updateLayout();
 			}
 
 			@Override
-			public void onItemRangeMoved ( int fromPosition, int toPosition, int itemCount ) {
+			public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
 				super.onItemRangeMoved(fromPosition, toPosition, itemCount);
 				updateLayout();
 			}
@@ -127,10 +128,8 @@ class DeweyDecorator extends RecyclerView.ItemDecoration {
 				adapter.onBindViewHolder(headerViewHolder, 0);
 				headerView = headerViewHolder.itemView;
 
-				int widthSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-				int heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+				measureView(headerView);
 
-				headerView.measure(widthSpec, heightSpec);
 				headerView.layout(0, 0, headerView.getMeasuredWidth(), headerView.getMeasuredHeight());
 			}
 
@@ -150,18 +149,23 @@ class DeweyDecorator extends RecyclerView.ItemDecoration {
 				adapter.onBindViewHolder(footerViewHolder, footerPos);
 				footerView = footerViewHolder.itemView;
 
-				int widthSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-				int heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+				measureView(footerView);
 
-				footerView.measure(widthSpec, heightSpec);
 				footerView.layout(0, 0, footerView.getMeasuredWidth(), footerView.getMeasuredHeight());
 			}
 		} else {
 			headerView = null;
 			footerView = null;
 
-			dewey.getRecycledViewPool().putRecycledView(headerViewHolder);
-			dewey.getRecycledViewPool().putRecycledView(footerViewHolder);
+			if ( dewey != null && dewey.getRecycledViewPool() != null ) {
+				if (headerViewHolder != null) {
+					dewey.getRecycledViewPool().putRecycledView(headerViewHolder);
+				}
+
+				if (footerViewHolder != null) {
+					dewey.getRecycledViewPool().putRecycledView(footerViewHolder);
+				}
+			}
 
 			headerViewHolder = null;
 			footerViewHolder = null;
@@ -171,6 +175,29 @@ class DeweyDecorator extends RecyclerView.ItemDecoration {
 
 			footerPos = NO_POSITION;
 		}
+	}
+
+	protected void measureView ( View view ) {
+		int width = getWidthForView(view);
+
+		int widthSpec;
+		if ( width != 0 ) {
+			widthSpec = View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY);
+		} else {
+			widthSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+		}
+
+		int heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+
+		view.measure(widthSpec, heightSpec);
+	}
+
+	protected int getWidthForView ( View view ) {
+		if ( view.getLayoutParams().width != ViewGroup.LayoutParams.MATCH_PARENT && view.getLayoutParams().width != ViewGroup.LayoutParams.WRAP_CONTENT ) {
+			return view.getLayoutParams().width;
+		}
+
+		return 0;
 	}
 
 	/**
@@ -188,8 +215,8 @@ class DeweyDecorator extends RecyclerView.ItemDecoration {
 		int dX;
 		int dY = 0;
 
-		int firstVisiblePos = parent.getChildPosition(parent.getChildAt(0));
-		int lastVisiblePos = parent.getChildPosition(parent.getChildAt(parent.getChildCount() - 1));
+		int firstVisiblePos = parent.getChildLayoutPosition(parent.getChildAt(0));
+		int lastVisiblePos = parent.getChildLayoutPosition(parent.getChildAt(parent.getChildCount() - 1));
 
 		boolean drawStripUnderHeaderAndFooter = dewey.getFocusedPosition() != 0 && dewey.getFocusedPosition() != footerPos;
 

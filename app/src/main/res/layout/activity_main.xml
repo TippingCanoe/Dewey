@@ -14,7 +14,8 @@
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:background="@color/material_deep_teal_200"
-		custom:stripColor="@color/accent_material_light" />
+		custom:stripColor="@color/accent_material_light"
+		custom:uniformCells="true" />
 
 	<LinearLayout
 		android:layout_width="match_parent"

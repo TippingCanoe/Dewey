@@ -3,6 +3,7 @@ package com.tippingcanoe.dewey;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DimenRes;
 import android.support.annotation.Nullable;
@@ -54,10 +55,7 @@ public class Dewey extends RecyclerView {
 	}
 
 	protected void setup ( Context context, @Nullable AttributeSet attrs ) {
-		layoutManager = new DeweyLayoutManager(context, LinearLayoutManager.HORIZONTAL, false);
-		setLayoutManager(layoutManager);
-		setHasFixedSize(true);
-		setHorizontalScrollBarEnabled(false);
+		boolean uniformCells = false;
 
 		if (attrs != null) {
 			TypedArray typedArray = context.getTheme().obtainStyledAttributes(attrs, R.styleable.Dewey, 0, 0);
@@ -68,20 +66,30 @@ public class Dewey extends RecyclerView {
 				stripHeight = typedArray.getDimensionPixelSize(R.styleable.Dewey_stripHeight, stripHeight);
 				stripColor = typedArray.getColor(R.styleable.Dewey_stripColor, stripColor);
 				animationDurationMs = typedArray.getInteger(R.styleable.Dewey_animationDurationMs, animationDurationMs);
+				uniformCells = typedArray.getBoolean(R.styleable.Dewey_uniformCells, uniformCells);
 			} finally {
 				typedArray.recycle();
 			}
 		}
 
+		layoutManager = new DeweyLayoutManager(context, LinearLayoutManager.HORIZONTAL, false, uniformCells);
+		setLayoutManager(layoutManager);
+		setHasFixedSize(true);
+		setHorizontalScrollBarEnabled(false);
+
 		setFocusedPosition(0, false);
 	}
 
 	public void setFocusedPosition ( int position, boolean animated ) {
-		if (onFocusedPositionChangedListener != null) {
+		setFocusedPosition(position, animated, false);
+	}
+
+	public void setFocusedPosition ( int position, boolean animated, boolean silently ) {
+		if (!silently && onFocusedPositionChangedListener != null) {
 			onFocusedPositionChangedListener.onFocusedPositionChanged(focusedPosition, position);
 		}
 
-		boolean requestedPositionIsVisible = position >= getChildPosition(getChildAt(0)) && position <= getChildPosition(getChildAt(getChildCount() - 1));
+		boolean requestedPositionIsVisible = position >= getChildAdapterPosition(getChildAt(0)) && position <= getChildAdapterPosition(getChildAt(getChildCount() - 1));
 
 		// @TODO, enhance this by attempting to center the focused position.
 		if (requestedPositionIsVisible && animated) {
@@ -120,13 +128,13 @@ public class Dewey extends RecyclerView {
 	}
 
 	public
-	@ColorRes
+	@ColorInt
 	int getCloakColor () {
 		return cloakColor;
 	}
 
 	public void setCloakColor ( @ColorRes int cloakColor ) {
-		this.cloakColor = cloakColor;
+		this.cloakColor = getResources().getColor(cloakColor);
 
 		if (deweyDecorator != null) {
 			deweyDecorator.setupCloak();
@@ -150,15 +158,15 @@ public class Dewey extends RecyclerView {
 	}
 
 	public void setStripHeight ( @DimenRes int stripHeight ) {
-		this.stripHeight = stripHeight;
+		this.stripHeight = getResources().getDimensionPixelSize(stripHeight);
 	}
 
-	public int getStripColor () {
+	public @ColorInt int getStripColor () {
 		return stripColor;
 	}
 
 	public void setStripColor ( @ColorRes int stripColor ) {
-		this.stripColor = stripColor;
+		this.stripColor = getResources().getColor(stripColor);
 
 		if (deweyDecorator != null) {
 			deweyDecorator.setupStrip();
@@ -187,6 +195,14 @@ public class Dewey extends RecyclerView {
 
 	public void setCloakCurveInterpolator ( Interpolator cloakCurveInterpolator ) {
 		this.cloakCurveInterpolator = cloakCurveInterpolator;
+	}
+
+	public boolean areCellsUniform() {
+		return ((DeweyLayoutManager) getLayoutManager()).areCellsUniform();
+	}
+
+	public void setUniformCells(boolean uniformCells) {
+		((DeweyLayoutManager) getLayoutManager()).setUniformCells(uniformCells);
 	}
 
 	public static interface OnFocusedPositionChangedListener {
