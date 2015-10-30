@@ -324,7 +324,7 @@ class DeweyDecorator extends RecyclerView.ItemDecoration {
 			int maxVisiblePos = 0;
 
 			for (int i = 0; i < dewey.getChildCount(); i++) {
-				int childPosition = dewey.getChildPosition(dewey.getChildAt(i));
+				int childPosition = dewey.getChildLayoutPosition(dewey.getChildAt(i));
 
 				if (childPosition != RecyclerView.NO_POSITION) {
 					if (childPosition == previouslyFocusedPosition) {

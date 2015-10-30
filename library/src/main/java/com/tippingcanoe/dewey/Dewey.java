@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Interpolator;
@@ -77,7 +78,23 @@ public class Dewey extends RecyclerView {
 		setHasFixedSize(true);
 		setHorizontalScrollBarEnabled(false);
 
-		setFocusedPosition(0, false);
+		setFocusedPosition(0, false, true);
+	}
+
+	protected int adjustPositionToCenterIfNeeded(int inputPosition) {
+		if ( inputPosition != focusedPosition && layoutManager != null && layoutManager.areCellsUniform() && layoutManager.getUniformCellWidth() != 0 ) {
+			boolean scrollingRight = inputPosition > focusedPosition;
+			float cellsInView = ((float) getMeasuredWidth() / (float) layoutManager.getUniformCellWidth());
+			int cellsToCenter = (int) Math.floor((cellsInView / 2.0f));
+			int offset = (scrollingRight ? 1 : -1) * cellsToCenter;
+			int adjustedPosition = Math.min(inputPosition + offset, getAdapter().getItemCount() - 1);
+
+			if ( adjustedPosition >= 0 && inputPosition >= offset ) {
+				return adjustedPosition;
+			}
+		}
+
+		return inputPosition;
 	}
 
 	public void setFocusedPosition ( int position, boolean animated ) {
@@ -89,18 +106,21 @@ public class Dewey extends RecyclerView {
 			onFocusedPositionChangedListener.onFocusedPositionChanged(focusedPosition, position);
 		}
 
-		boolean requestedPositionIsVisible = position >= getChildAdapterPosition(getChildAt(0)) && position <= getChildAdapterPosition(getChildAt(getChildCount() - 1));
+		int adjustedScrollTarget = adjustPositionToCenterIfNeeded(position);
 
-		// @TODO, enhance this by attempting to center the focused position.
-		if (requestedPositionIsVisible && animated) {
+		if (requestedPositionIsVisible(position) && requestedPositionIsVisible(adjustedScrollTarget) && animated) {
 			deweyDecorator.startAnimation(focusedPosition, position);
 		} else if (animated) {
-			smoothScrollToPosition(position);
+			smoothScrollToPosition(adjustedScrollTarget);
 		} else {
-			scrollToPosition(position);
+			scrollToPosition(adjustedScrollTarget);
 		}
 
 		focusedPosition = position;
+	}
+
+	public boolean requestedPositionIsVisible ( int position ) {
+		return position >= getChildAdapterPosition(getChildAt(0)) && position <= getChildAdapterPosition(getChildAt(getChildCount() - 1));
 	}
 
 	@Override

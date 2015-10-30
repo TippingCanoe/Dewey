@@ -128,6 +128,10 @@ class DeweyLayoutManager extends LinearLayoutManager {
 		return uniformCells;
 	}
 
+	public int getUniformCellWidth() {
+		return uniformCellWidth;
+	}
+
 	public void setUniformCells(boolean uniformCells) {
 		this.uniformCells = uniformCells;
 	}
