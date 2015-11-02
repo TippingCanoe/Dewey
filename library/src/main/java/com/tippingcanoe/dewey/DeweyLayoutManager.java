@@ -107,4 +107,8 @@ class DeweyLayoutManager extends LinearLayoutManager {
 		this.uniformCellWidth = uniformCellWidth;
 		updateUniformCellWidth();
 	}
+
+	public int getForcedCellWidth() {
+		return forcedCellWidth;
+	}
 }

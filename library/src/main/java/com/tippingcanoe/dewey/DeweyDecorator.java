@@ -195,6 +195,8 @@ class DeweyDecorator extends RecyclerView.ItemDecoration {
 	protected int getWidthForView ( View view ) {
 		if ( view.getLayoutParams().width != ViewGroup.LayoutParams.MATCH_PARENT && view.getLayoutParams().width != ViewGroup.LayoutParams.WRAP_CONTENT ) {
 			return view.getLayoutParams().width;
+		} else if ( ((DeweyLayoutManager) dewey.getLayoutManager()).getForcedCellWidth() > 0 ) {
+			return ((DeweyLayoutManager) dewey.getLayoutManager()).getForcedCellWidth();
 		}
 
 		return 0;
