@@ -407,7 +407,7 @@ class DeweyDecorator extends RecyclerView.ItemDecoration {
 			}
 
 			if (currentFocusedChild != null) {
-				dY = parent.getMeasuredHeight() - dewey.getStripHeight();
+				dY = parent.getMeasuredHeight() - dewey.getStripHeight() - dewey.getStripOffset();
 				dWidth = currentFocusedChild.getMeasuredWidth();
 
 				if (isAnimating) {

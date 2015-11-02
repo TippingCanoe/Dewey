@@ -31,6 +31,7 @@ public class Dewey extends RecyclerView {
 	float minCloakPercentage = 50f;
 	Interpolator cloakCurveInterpolator = new AccelerateInterpolator();
 
+	int stripOffset = 0;
 	int stripHeight = 10;
 	int stripColor = Color.RED;
 	Interpolator stripAnimationInterpolator = new AccelerateDecelerateInterpolator();
@@ -64,6 +65,7 @@ public class Dewey extends RecyclerView {
 			try {
 				cloakColor = typedArray.getColor(R.styleable.Dewey_cloakColor, cloakColor);
 				minCloakPercentage = typedArray.getFloat(R.styleable.Dewey_minCloakPercentage, minCloakPercentage);
+				stripOffset = typedArray.getDimensionPixelSize(R.styleable.Dewey_stripOffset, stripOffset);
 				stripHeight = typedArray.getDimensionPixelSize(R.styleable.Dewey_stripHeight, stripHeight);
 				stripColor = typedArray.getColor(R.styleable.Dewey_stripColor, stripColor);
 				animationDurationMs = typedArray.getInteger(R.styleable.Dewey_animationDurationMs, animationDurationMs);
@@ -223,6 +225,14 @@ public class Dewey extends RecyclerView {
 
 	public void setUniformCells(boolean uniformCells) {
 		((DeweyLayoutManager) getLayoutManager()).setUniformCells(uniformCells);
+	}
+
+	public int getStripOffset() {
+		return stripOffset;
+	}
+
+	public void setStripOffset(@DimenRes int stripOffset) {
+		this.stripOffset = getResources().getDimensionPixelSize(stripOffset);
 	}
 
 	public static interface OnFocusedPositionChangedListener {

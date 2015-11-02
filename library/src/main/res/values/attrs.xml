@@ -5,6 +5,7 @@
 		<attr name="minCloakPercentage" format="float" />
 		<attr name="stripHeight" format="dimension" />
 		<attr name="stripColor" format="color" />
+		<attr name="stripOffset" format="dimension" />
 		<attr name="animationDurationMs" format="integer" />
 		<attr name="uniformCells" format="boolean" />
 	</declare-styleable>
