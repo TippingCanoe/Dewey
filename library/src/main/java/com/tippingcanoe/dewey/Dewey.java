@@ -238,4 +238,10 @@ public class Dewey extends RecyclerView {
 	public static interface OnFocusedPositionChangedListener {
 		void onFocusedPositionChanged ( int previousFocusedPosition, int newFocusedPosition );
 	}
+
+	public void remeasureItemWidth() {
+		((DeweyLayoutManager) getLayoutManager()).updateForcedCellWidth();
+		forceLayout();
+		requestLayout();
+	}
 }
