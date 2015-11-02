@@ -396,7 +396,7 @@ class DeweyDecorator extends RecyclerView.ItemDecoration {
 		if ((stripPosition == 0 && headerView != null) || (stripPosition == footerPos && footerView != null) || (stripPosition >= firstVisiblePos && stripPosition <= lastVisiblePos)) {
 			View currentFocusedChild;
 
-			if (stripPosition == 0) {
+			if (stripPosition == 0 && headerView != null) {
 				currentFocusedChild = headerView;
 			} else if (stripPosition == footerPos && footerView != null) {
 				currentFocusedChild = footerView;

@@ -11,6 +11,8 @@ import android.view.ViewGroup;
 class DeweyLayoutManager extends LinearLayoutManager {
 	boolean uniformCells = false;
 	int uniformCellWidth = 0;
+	int forcedCellWidth = 0;
+
 	/**
 	 * Creates a vertical LinearLayoutManager
 	 *
@@ -91,15 +93,14 @@ class DeweyLayoutManager extends LinearLayoutManager {
 
 			detachView(view);
 
+			updateForcedCellWidth();
+
 			return height;
 		}
 
 		return 0;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public RecyclerView.LayoutParams generateDefaultLayoutParams() {
 		return updateLayoutParamsForUniformWidthIfNeeded(super.generateDefaultLayoutParams());
@@ -116,9 +117,14 @@ class DeweyLayoutManager extends LinearLayoutManager {
 		return updateLayoutParamsForUniformWidthIfNeeded(super.generateLayoutParams(c, attrs));
 	}
 
+	@Override
+	public boolean checkLayoutParams(RecyclerView.LayoutParams lp) {
+		return super.checkLayoutParams(lp) && (forcedCellWidth == 0 || lp.width == forcedCellWidth);
+	}
+
 	protected RecyclerView.LayoutParams updateLayoutParamsForUniformWidthIfNeeded ( RecyclerView.LayoutParams layoutParams ) {
-		if ( uniformCells && uniformCellWidth != 0 && (uniformCellWidth * getItemCount()) < getWidth() ) {
-			layoutParams.width = (int) ((float) getWidth() / (float) getItemCount());
+		if ( forcedCellWidth != 0 ) {
+			layoutParams.width = forcedCellWidth;
 		}
 
 		return layoutParams;
@@ -134,5 +140,12 @@ class DeweyLayoutManager extends LinearLayoutManager {
 
 	public void setUniformCells(boolean uniformCells) {
 		this.uniformCells = uniformCells;
+		updateForcedCellWidth();
+	}
+
+	protected void updateForcedCellWidth () {
+		if ( uniformCells && uniformCellWidth != 0 && (uniformCellWidth * getItemCount()) < getWidth() ) {
+			forcedCellWidth = (int) ((float) getWidth() / (float) getItemCount());
+		}
 	}
 }

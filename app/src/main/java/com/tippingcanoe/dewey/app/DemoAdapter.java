@@ -2,6 +2,8 @@ package com.tippingcanoe.dewey.app;
 
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +24,12 @@ public class DemoAdapter extends RecyclerView.Adapter<DemoAdapter.DeweyViewHolde
 	@Override
 	public DeweyViewHolder onCreateViewHolder ( ViewGroup parent, int viewType ) {
 		View deweyCell = LayoutInflater.from(parent.getContext()).inflate(R.layout.dewey_cell, parent, false);
+
+		//TextView deweyCell = new TextView(parent.getContext());
+		//deweyCell.setLayoutParams(new RecyclerView.LayoutParams(40, ViewGroup.LayoutParams.MATCH_PARENT));
+		//deweyCell.setGravity(Gravity.CENTER_HORIZONTAL);
+		//deweyCell.setPadding(0, 10, 0, 10);
+
 		return new DeweyViewHolder(deweyCell);
 	}
 
@@ -32,7 +40,7 @@ public class DemoAdapter extends RecyclerView.Adapter<DemoAdapter.DeweyViewHolde
 
 	@Override
 	public int getItemCount () {
-		return 50;//return sentances.size();
+		return 2;//return sentances.size();
 	}
 
 	protected List<String> getRandomSentances () {
