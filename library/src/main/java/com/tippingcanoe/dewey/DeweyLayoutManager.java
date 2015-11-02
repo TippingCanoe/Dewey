@@ -93,8 +93,6 @@ class DeweyLayoutManager extends LinearLayoutManager {
 
 			detachView(view);
 
-			updateForcedCellWidth();
-
 			return height;
 		}
 
@@ -140,10 +138,21 @@ class DeweyLayoutManager extends LinearLayoutManager {
 
 	public void setUniformCells(boolean uniformCells) {
 		this.uniformCells = uniformCells;
-		updateForcedCellWidth();
 	}
 
-	protected void updateForcedCellWidth () {
+	protected void updateForcedCellWidth (RecyclerView recyclerView) {
+		View firstChild = recyclerView.getChildCount() == 0 ? null : recyclerView.getChildAt(0);
+
+		if (firstChild != null) {
+			RecyclerView.LayoutParams p = (RecyclerView.LayoutParams) firstChild.getLayoutParams();
+
+			if (uniformCells) {
+				if (p.width != RecyclerView.LayoutParams.MATCH_PARENT && p.width != RecyclerView.LayoutParams.WRAP_CONTENT) {
+					uniformCellWidth = p.width;
+				}
+			}
+		}
+
 		if ( uniformCells && uniformCellWidth != 0 && (uniformCellWidth * getItemCount()) < getWidth() ) {
 			forcedCellWidth = (int) ((float) getWidth() / (float) getItemCount());
 		}

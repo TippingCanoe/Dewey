@@ -240,7 +240,7 @@ public class Dewey extends RecyclerView {
 	}
 
 	public void remeasureItemWidth() {
-		((DeweyLayoutManager) getLayoutManager()).updateForcedCellWidth();
+		((DeweyLayoutManager) getLayoutManager()).updateForcedCellWidth(this);
 		forceLayout();
 		requestLayout();
 	}
