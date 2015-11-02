@@ -234,7 +234,7 @@ class DeweyDecorator extends RecyclerView.ItemDecoration {
 				cloakPaint.setAlpha(Color.alpha(dewey.getCloakColor()));
 			}
 
-			c.drawRect(0, 0, headerView.getMeasuredWidth(), headerView.getMeasuredHeight(), cloakPaint);
+			c.drawRect(0, 0, headerView.getMeasuredWidth(), headerView.getMeasuredHeight() - dewey.getStripOffset(), cloakPaint);
 			headerView.draw(c);
 		}
 
@@ -251,7 +251,7 @@ class DeweyDecorator extends RecyclerView.ItemDecoration {
 			dX = parent.getMeasuredWidth() - footerView.getMeasuredWidth();
 			c.translate(dX, dY);
 
-			c.drawRect(0, 0, footerView.getMeasuredWidth(), footerView.getMeasuredHeight(), cloakPaint);
+			c.drawRect(0, 0, footerView.getMeasuredWidth(), footerView.getMeasuredHeight() - dewey.getStripOffset(), cloakPaint);
 			footerView.draw(c);
 
 			c.translate(-1 * dX, -1 * dY);
