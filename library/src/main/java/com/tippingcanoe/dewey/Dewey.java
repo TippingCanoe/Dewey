@@ -10,7 +10,6 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Interpolator;
@@ -57,7 +56,7 @@ public class Dewey extends RecyclerView {
 	}
 
 	protected void setup ( Context context, @Nullable AttributeSet attrs ) {
-		boolean uniformCells = false;
+		int uniformCellWidth = 0;
 
 		if (attrs != null) {
 			TypedArray typedArray = context.getTheme().obtainStyledAttributes(attrs, R.styleable.Dewey, 0, 0);
@@ -69,13 +68,13 @@ public class Dewey extends RecyclerView {
 				stripHeight = typedArray.getDimensionPixelSize(R.styleable.Dewey_stripHeight, stripHeight);
 				stripColor = typedArray.getColor(R.styleable.Dewey_stripColor, stripColor);
 				animationDurationMs = typedArray.getInteger(R.styleable.Dewey_animationDurationMs, animationDurationMs);
-				uniformCells = typedArray.getBoolean(R.styleable.Dewey_uniformCells, uniformCells);
+				uniformCellWidth = typedArray.getDimensionPixelSize(R.styleable.Dewey_uniformCellWidth, uniformCellWidth);
 			} finally {
 				typedArray.recycle();
 			}
 		}
 
-		layoutManager = new DeweyLayoutManager(context, LinearLayoutManager.HORIZONTAL, false, uniformCells);
+		layoutManager = new DeweyLayoutManager(context, LinearLayoutManager.HORIZONTAL, false, uniformCellWidth);
 		setLayoutManager(layoutManager);
 		setHasFixedSize(true);
 		setHorizontalScrollBarEnabled(false);
@@ -223,8 +222,9 @@ public class Dewey extends RecyclerView {
 		return ((DeweyLayoutManager) getLayoutManager()).areCellsUniform();
 	}
 
-	public void setUniformCells(boolean uniformCells) {
-		((DeweyLayoutManager) getLayoutManager()).setUniformCells(uniformCells);
+	public void setUniformCellWidth(@DimenRes int uniformCellWidth) {
+		((DeweyLayoutManager) getLayoutManager()).setUniformCellWidth(getResources().getDimensionPixelSize(uniformCellWidth));
+		remeasureItemWidth();
 	}
 
 	public int getStripOffset() {
@@ -240,7 +240,7 @@ public class Dewey extends RecyclerView {
 	}
 
 	public void remeasureItemWidth() {
-		((DeweyLayoutManager) getLayoutManager()).updateForcedCellWidth(this);
+		((DeweyLayoutManager) getLayoutManager()).updateUniformCellWidth();
 		forceLayout();
 		requestLayout();
 	}

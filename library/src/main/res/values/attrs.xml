@@ -7,6 +7,6 @@
 		<attr name="stripColor" format="color" />
 		<attr name="stripOffset" format="dimension" />
 		<attr name="animationDurationMs" format="integer" />
-		<attr name="uniformCells" format="boolean" />
+		<attr name="uniformCellWidth" format="dimension" />
 	</declare-styleable>
 </resources>
