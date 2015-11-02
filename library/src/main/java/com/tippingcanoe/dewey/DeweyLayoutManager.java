@@ -14,16 +14,19 @@ class DeweyLayoutManager extends LinearLayoutManager {
 	public DeweyLayoutManager(Context context, int uniformCellWidth) {
 		super(context);
 		this.uniformCellWidth = uniformCellWidth;
+		updateUniformCellWidth();
 	}
 
 	public DeweyLayoutManager(Context context, int orientation, boolean reverseLayout, int uniformCellWidth) {
 		super(context, orientation, reverseLayout);
 		this.uniformCellWidth = uniformCellWidth;
+		updateUniformCellWidth();
 	}
 
 	public DeweyLayoutManager(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes, int uniformCellWidth) {
 		super(context, attrs, defStyleAttr, defStyleRes);
 		this.uniformCellWidth = uniformCellWidth;
+		updateUniformCellWidth();
 	}
 
 	@Override
@@ -34,6 +37,8 @@ class DeweyLayoutManager extends LinearLayoutManager {
 		}
 
 		super.onMeasure(recycler, state, widthSpec, heightSpec);
+
+		updateUniformCellWidth();
 	}
 
 	protected int measureFirstChildHeight(RecyclerView.Recycler recycler) {
@@ -100,5 +105,6 @@ class DeweyLayoutManager extends LinearLayoutManager {
 
 	public void setUniformCellWidth(int uniformCellWidth) {
 		this.uniformCellWidth = uniformCellWidth;
+		updateUniformCellWidth();
 	}
 }
