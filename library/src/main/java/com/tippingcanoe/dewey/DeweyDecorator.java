@@ -111,6 +111,11 @@ class DeweyDecorator extends RecyclerView.ItemDecoration {
 		});
 	}
 
+	protected void forceUpdateLayout() {
+		headerView = footerView = null;
+		updateLayout();
+	}
+
 	@SuppressWarnings("unchecked")
 	protected void updateLayout () {
 		if ( adapter.getItemCount() > 3 ) {
@@ -193,10 +198,10 @@ class DeweyDecorator extends RecyclerView.ItemDecoration {
 	}
 
 	protected int getWidthForView ( View view ) {
-		if ( view.getLayoutParams().width != ViewGroup.LayoutParams.MATCH_PARENT && view.getLayoutParams().width != ViewGroup.LayoutParams.WRAP_CONTENT ) {
-			return view.getLayoutParams().width;
-		} else if ( ((DeweyLayoutManager) dewey.getLayoutManager()).getForcedCellWidth() > 0 ) {
+		if ( ((DeweyLayoutManager) dewey.getLayoutManager()).getForcedCellWidth() > 0 ) {
 			return ((DeweyLayoutManager) dewey.getLayoutManager()).getForcedCellWidth();
+		} else if ( view.getLayoutParams().width != ViewGroup.LayoutParams.MATCH_PARENT && view.getLayoutParams().width != ViewGroup.LayoutParams.WRAP_CONTENT ) {
+			return view.getLayoutParams().width;
 		}
 
 		return 0;

@@ -243,5 +243,6 @@ public class Dewey extends RecyclerView {
 		((DeweyLayoutManager) getLayoutManager()).updateUniformCellWidth();
 		forceLayout();
 		requestLayout();
+		deweyDecorator.forceUpdateLayout();
 	}
 }
