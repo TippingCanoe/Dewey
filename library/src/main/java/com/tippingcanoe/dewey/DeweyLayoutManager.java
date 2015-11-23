@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -98,8 +99,12 @@ class DeweyLayoutManager extends LinearLayoutManager {
 	}
 
 	protected void updateUniformCellWidth() {
-		if ( areCellsUniform() && (uniformCellWidth * getItemCount()) < getWidth() ) {
-			forcedCellWidth = (int) ((float) getWidth() / (float) getItemCount());
+		if ( areCellsUniform() ) {
+			if ( (uniformCellWidth * getItemCount()) < getWidth() ) {
+				forcedCellWidth = (int) ((float) getWidth() / (float) getItemCount());
+			} else {
+				forcedCellWidth = uniformCellWidth;
+			}
 		}
 	}
 
