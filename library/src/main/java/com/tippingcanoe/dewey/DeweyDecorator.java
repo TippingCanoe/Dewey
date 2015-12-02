@@ -222,63 +222,69 @@ class DeweyDecorator extends RecyclerView.ItemDecoration {
 		int dX;
 		int dY = 0;
 
-		int firstVisiblePos = parent.getChildLayoutPosition(parent.getChildAt(0));
-		int lastVisiblePos = parent.getChildLayoutPosition(parent.getChildAt(parent.getChildCount() - 1));
+		View firstChild = parent.getChildAt(0);
+		View lastChild = parent.getChildAt(parent.getChildCount() - 1);
 
-		boolean drawStripUnderHeaderAndFooter = dewey.getFocusedPosition() != 0 && dewey.getFocusedPosition() != footerPos;
+		if ( firstChild != null && lastChild != null ) {
 
-		if (drawStripUnderHeaderAndFooter) {
-			drawStrip(parent, c, firstVisiblePos, lastVisiblePos);
-		}
+			int firstVisiblePos = parent.getChildLayoutPosition(firstChild);
+			int lastVisiblePos = parent.getChildLayoutPosition(lastChild);
 
-		// Draw sticky header.
-		if (headerView != null) {
-			float headerPercentageHidden = getPercentageOfViewHidden(parent.getChildAt(0), parent);
+			boolean drawStripUnderHeaderAndFooter = dewey.getFocusedPosition() != 0 && dewey.getFocusedPosition() != footerPos;
 
-			if (firstVisiblePos == 0) {
-				cloakPaint.setAlpha(getMixedCloakAlpha(headerPercentageHidden));
-			} else {
-				cloakPaint.setAlpha(Color.alpha(dewey.getCloakColor()));
+			if (drawStripUnderHeaderAndFooter) {
+				drawStrip(parent, c, firstVisiblePos, lastVisiblePos);
 			}
 
-			c.drawRect(0, 0, headerView.getMeasuredWidth(), headerView.getMeasuredHeight() - dewey.getStripOffset(), cloakPaint);
-			headerView.draw(c);
-		}
+			// Draw sticky header.
+			if (headerView != null) {
+				float headerPercentageHidden = getPercentageOfViewHidden(firstChild, parent);
 
-		// Draw sticky footer.
-		if ( footerView != null ) {
-			float footerPercentageHidden = getPercentageOfViewHidden(parent.getChildAt(parent.getChildCount() - 1), parent);
+				if (firstVisiblePos == 0) {
+					cloakPaint.setAlpha(getMixedCloakAlpha(headerPercentageHidden));
+				} else {
+					cloakPaint.setAlpha(Color.alpha(dewey.getCloakColor()));
+				}
 
-			if (lastVisiblePos == footerPos) {
-				cloakPaint.setAlpha(getMixedCloakAlpha(footerPercentageHidden));
-			} else {
-				cloakPaint.setAlpha(Color.alpha(dewey.getCloakColor()));
+				c.drawRect(0, 0, headerView.getMeasuredWidth(), headerView.getMeasuredHeight() - dewey.getStripOffset(), cloakPaint);
+				headerView.draw(c);
 			}
 
-			dX = parent.getMeasuredWidth() - footerView.getMeasuredWidth();
-			c.translate(dX, dY);
+			// Draw sticky footer.
+			if (footerView != null) {
+				float footerPercentageHidden = getPercentageOfViewHidden(lastChild, parent);
 
-			c.drawRect(0, 0, footerView.getMeasuredWidth(), footerView.getMeasuredHeight() - dewey.getStripOffset(), cloakPaint);
-			footerView.draw(c);
+				if (lastVisiblePos == footerPos) {
+					cloakPaint.setAlpha(getMixedCloakAlpha(footerPercentageHidden));
+				} else {
+					cloakPaint.setAlpha(Color.alpha(dewey.getCloakColor()));
+				}
 
-			c.translate(-1 * dX, -1 * dY);
-		}
+				dX = parent.getMeasuredWidth() - footerView.getMeasuredWidth();
+				c.translate(dX, dY);
 
-		if (!drawStripUnderHeaderAndFooter) {
-			drawStrip(parent, c, firstVisiblePos, lastVisiblePos);
-		}
+				c.drawRect(0, 0, footerView.getMeasuredWidth(), footerView.getMeasuredHeight() - dewey.getStripOffset(), cloakPaint);
+				footerView.draw(c);
 
-		c.restore();
+				c.translate(-1 * dX, -1 * dY);
+			}
 
-		if (framesRemaining > 0) {
-			framesRemaining--;
+			if (!drawStripUnderHeaderAndFooter) {
+				drawStrip(parent, c, firstVisiblePos, lastVisiblePos);
+			}
 
-			animatingStripXOffset = animatingStripXOffset + animatingStripXOffsetPerFrame;
-			animatingStripWidthOffset = animatingStripWidthOffset + animatingStripWidthOffsetPerFrame;
+			c.restore();
 
-			dewey.postInvalidateDelayed((long) (1000f / ((float) framesPerMs / 1000f)));
-		} else {
-			resetAnimationProperties();
+			if (framesRemaining > 0) {
+				framesRemaining--;
+
+				animatingStripXOffset = animatingStripXOffset + animatingStripXOffsetPerFrame;
+				animatingStripWidthOffset = animatingStripWidthOffset + animatingStripWidthOffsetPerFrame;
+
+				dewey.postInvalidateDelayed((long) (1000f / ((float) framesPerMs / 1000f)));
+			} else {
+				resetAnimationProperties();
+			}
 		}
 	}
 
