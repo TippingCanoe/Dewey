@@ -74,7 +74,7 @@ public class Dewey extends RecyclerView {
 			}
 		}
 
-		layoutManager = new DeweyLayoutManager(context, LinearLayoutManager.HORIZONTAL, false, uniformCellWidth);
+		layoutManager = new DeweyLayoutManager(context, LinearLayoutManager.HORIZONTAL, false, uniformCellWidth, animationDurationMs);
 		setLayoutManager(layoutManager);
 		setHasFixedSize(true);
 		setHorizontalScrollBarEnabled(false);

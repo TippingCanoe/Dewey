@@ -1,32 +1,38 @@
 package com.tippingcanoe.dewey;
 
 import android.content.Context;
+import android.graphics.PointF;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
 class DeweyLayoutManager extends LinearLayoutManager {
 	int uniformCellWidth = 0;
 	int forcedCellWidth = 0;
+	int animationDuration = 0;
 
-	public DeweyLayoutManager(Context context, int uniformCellWidth) {
+	public DeweyLayoutManager(Context context, int uniformCellWidth, int animationDuration) {
 		super(context);
 		this.uniformCellWidth = uniformCellWidth;
+		this.animationDuration = animationDuration;
 		updateUniformCellWidth();
 	}
 
-	public DeweyLayoutManager(Context context, int orientation, boolean reverseLayout, int uniformCellWidth) {
+	public DeweyLayoutManager(Context context, int orientation, boolean reverseLayout, int uniformCellWidth, int animationDuration) {
 		super(context, orientation, reverseLayout);
 		this.uniformCellWidth = uniformCellWidth;
+		this.animationDuration = animationDuration;
 		updateUniformCellWidth();
 	}
 
-	public DeweyLayoutManager(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes, int uniformCellWidth) {
+	public DeweyLayoutManager(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes, int uniformCellWidth, int animationDuration) {
 		super(context, attrs, defStyleAttr, defStyleRes);
 		this.uniformCellWidth = uniformCellWidth;
+		this.animationDuration = animationDuration;
 		updateUniformCellWidth();
 	}
 
@@ -115,5 +121,56 @@ class DeweyLayoutManager extends LinearLayoutManager {
 
 	public int getForcedCellWidth() {
 		return forcedCellWidth;
+	}
+
+	@Override
+	public void smoothScrollToPosition(RecyclerView recyclerView, RecyclerView.State state, int position) {
+		if ( areCellsUniform() ) {
+			View firstVisibleChild = recyclerView.getChildAt(0);
+			int distanceInPixels = 0;
+
+			if ( firstVisibleChild != null ) {
+				int currentPosition = recyclerView.getChildLayoutPosition(firstVisibleChild);
+				distanceInPixels = Math.abs((currentPosition - position) * getUniformCellWidth());
+				if (distanceInPixels == 0) {
+					distanceInPixels = (int) Math.abs(ViewCompat.getY(firstVisibleChild));
+				}
+			}
+
+			if ( distanceInPixels == 0 ) {
+				super.smoothScrollToPosition(recyclerView, state, position);
+			} else {
+				DurationSmoothScroller smoothScroller = new DurationSmoothScroller(recyclerView.getContext(), distanceInPixels, animationDuration);
+				smoothScroller.setTargetPosition(position);
+				startSmoothScroll(smoothScroller);
+			}
+		} else {
+			super.smoothScrollToPosition(recyclerView, state, position);
+		}
+	}
+
+	class DurationSmoothScroller extends LinearSmoothScroller {
+		private static final int TARGET_SEEK_SCROLL_DISTANCE_PX = 10000;
+		private final float distanceInPixels;
+		private final float duration;
+
+		public DurationSmoothScroller(Context context, int distanceInPixels, int duration) {
+			super(context);
+			this.distanceInPixels = distanceInPixels;
+			float millisecondsPerPx = calculateSpeedPerPixel(context.getResources().getDisplayMetrics());
+			this.duration = distanceInPixels < TARGET_SEEK_SCROLL_DISTANCE_PX ?
+					(int) (Math.abs(distanceInPixels) * millisecondsPerPx) : duration;
+		}
+
+		@Override
+		public PointF computeScrollVectorForPosition(int targetPosition) {
+			return DeweyLayoutManager.this.computeScrollVectorForPosition(targetPosition);
+		}
+
+		@Override
+		protected int calculateTimeForScrolling(int dx) {
+			float proportion = (float) dx / distanceInPixels;
+			return (int) (duration * proportion);
+		}
 	}
 }
