@@ -3,7 +3,7 @@
 	android:id="@+id/dewey_cell_label"
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="40dp"
-	android:layout_height="wrap_content"
+	android:layout_height="40dp"
 	android:gravity="center"
 	android:padding="10dp"
 	android:ellipsize="end"/>

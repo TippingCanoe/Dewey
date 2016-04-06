@@ -1,9 +1,6 @@
 package com.tippingcanoe.dewey.app;
 
-import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
-import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,7 +37,7 @@ public class DemoAdapter extends RecyclerView.Adapter<DemoAdapter.DeweyViewHolde
 
 	@Override
 	public int getItemCount () {
-		return 2;//return sentances.size();
+		return 10000;
 	}
 
 	protected List<String> getRandomSentances () {

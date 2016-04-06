@@ -38,33 +38,9 @@ class DeweyLayoutManager extends LinearLayoutManager {
 
 	@Override
 	public void onMeasure ( RecyclerView.Recycler recycler, RecyclerView.State state, int widthSpec, int heightSpec ) {
-		if ( View.MeasureSpec.getMode(heightSpec) != View.MeasureSpec.EXACTLY ) {
-			int height = measureFirstChildHeight(recycler);
-			heightSpec = View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY);
-		}
-
 		super.onMeasure(recycler, state, widthSpec, heightSpec);
 
 		updateUniformCellWidth();
-	}
-
-	protected int measureFirstChildHeight(RecyclerView.Recycler recycler) {
-		View view = getItemCount() == 0 ? null : recycler.getViewForPosition(0);
-
-		if (view != null) {
-			RecyclerView.LayoutParams p = (RecyclerView.LayoutParams) view.getLayoutParams();
-
-			int childHeightSpec = ViewGroup.getChildMeasureSpec(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED), getPaddingTop() + getPaddingBottom(), p.height);
-			view.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED), childHeightSpec);
-
-			int height = view.getMeasuredHeight() + p.bottomMargin + p.topMargin;
-
-			detachView(view);
-
-			return height;
-		}
-
-		return 0;
 	}
 
 	@Override
@@ -151,15 +127,17 @@ class DeweyLayoutManager extends LinearLayoutManager {
 
 	class DurationSmoothScroller extends LinearSmoothScroller {
 		private static final int TARGET_SEEK_SCROLL_DISTANCE_PX = 10000;
+		private final float MILLISECONDS_PER_PX;
 		private final float distanceInPixels;
 		private final float duration;
 
 		public DurationSmoothScroller(Context context, int distanceInPixels, int duration) {
 			super(context);
 			this.distanceInPixels = distanceInPixels;
-			float millisecondsPerPx = calculateSpeedPerPixel(context.getResources().getDisplayMetrics());
+			duration = 1000;
+			MILLISECONDS_PER_PX = calculateSpeedPerPixel(context.getResources().getDisplayMetrics());
 			this.duration = distanceInPixels < TARGET_SEEK_SCROLL_DISTANCE_PX ?
-					(int) (Math.abs(distanceInPixels) * millisecondsPerPx) : duration;
+					(int) (Math.abs(distanceInPixels) * MILLISECONDS_PER_PX) : duration;
 		}
 
 		@Override
